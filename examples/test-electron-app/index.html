@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Test Electron App</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+          sans-serif;
+        padding: 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        min-height: 100vh;
+        margin: 0;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+      }
+
+      h1 {
+        margin-top: 0;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        margin: 20px 0;
+        flex-wrap: wrap;
+      }
+
+      button {
+        padding: 12px 24px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        background: white;
+        color: #667eea;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      input[type='text'] {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        margin: 10px 0;
+      }
+
+      input[type='text']::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      #output {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 20px;
+        min-height: 100px;
+        font-family: 'Courier New', monospace;
+        white-space: pre-wrap;
+      }
+
+      .info {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 Test Electron App</h1>
+
+      <div class="info">
+        <strong>MCP Server Testing App</strong><br />
+        This app is running with <code>--inspect=9222</code> for debugging.<br />
+        Use the Electron Native MCP Server to interact with this app!
+      </div>
+
+      <h2>Interactive Elements</h2>
+
+      <div class="button-group">
+        <button id="clickMe">Click Me!</button>
+        <button id="alertBtn">Show Alert</button>
+        <button id="changeColor">Change Color</button>
+        <button id="clearOutput">Clear Output</button>
+      </div>
+
+      <input type="text" id="textInput" placeholder="Type something here..." />
+
+      <div class="button-group">
+        <button id="submitBtn">Submit Text</button>
+        <button id="countBtn">Count Clicks</button>
+      </div>
+
+      <h2>Output</h2>
+      <div id="output">Ready for testing...</div>
+    </div>
+
+    <script>
+      let clickCount = 0;
+
+      function log(message) {
+        const output = document.getElementById('output');
+        const timestamp = new Date().toLocaleTimeString();
+        output.textContent += `[${timestamp}] ${message}\n`;
+        output.scrollTop = output.scrollHeight;
+      }
+
+      document.getElementById('clickMe').addEventListener('click', () => {
+        log('Button clicked!');
+      });
+
+      document.getElementById('alertBtn').addEventListener('click', () => {
+        alert('This is an alert from the Electron app!');
+        log('Alert shown');
+      });
+
+      document.getElementById('changeColor').addEventListener('click', () => {
+        const colors = [
+          'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+          'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+          'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+        ];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        document.body.style.background = randomColor;
+        log('Background color changed');
+      });
+
+      document.getElementById('clearOutput').addEventListener('click', () => {
+        document.getElementById('output').textContent = 'Output cleared.\n';
+      });
+
+      document.getElementById('submitBtn').addEventListener('click', () => {
+        const text = document.getElementById('textInput').value;
+        if (text) {
+          log(`Text submitted: "${text}"`);
+          document.getElementById('textInput').value = '';
+        } else {
+          log('No text to submit');
+        }
+      });
+
+      document.getElementById('countBtn').addEventListener('click', () => {
+        clickCount++;
+        log(`Click count: ${clickCount}`);
+      });
+
+      document.getElementById('textInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          document.getElementById('submitBtn').click();
+        }
+      });
+
+      // Log when the app is ready
+      log('Test Electron App loaded successfully!');
+      log('CDP debugging available on port 9222');
+    </script>
+  </body>
+</html>
+

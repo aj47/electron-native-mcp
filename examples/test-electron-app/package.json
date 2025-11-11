@@ -1,0 +1,17 @@
+{
+  "name": "test-electron-app",
+  "version": "1.0.0",
+  "description": "Simple Electron app for testing the MCP server",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron . --inspect=9222",
+    "start-debug": "electron . --inspect-brk=9222"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0"
+  }
+}
+

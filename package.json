@@ -1,0 +1,55 @@
+{
+  "name": "electron-native-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for debugging native Electron apps on macOS with DOM inspection, UI automation, and global hotkey support",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "electron-native-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "watch": "tsx watch src/index.ts",
+    "prepare": "npm run build",
+    "test": "vitest",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "electron",
+    "debugging",
+    "macos",
+    "automation",
+    "accessibility",
+    "chrome-devtools-protocol"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.21.0",
+    "chrome-remote-interface": "^0.33.2",
+    "node-mac-permissions": "^2.3.0",
+    "robotjs": "^0.6.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "@typescript-eslint/parser": "^7.13.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.2",
+    "tsx": "^4.15.6",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "os": [
+    "darwin"
+  ]
+}
+
