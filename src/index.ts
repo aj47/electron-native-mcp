@@ -25,16 +25,14 @@ async function main() {
   console.error('');
   console.error('Available tool categories:');
   console.error('  - DOM Inspection (7 tools): Connect to Electron apps via CDP');
-  console.error('  - UI Automation (9 tools): Control native macOS UI elements');
-  console.error('  - Global Hotkeys (4 tools): Trigger keyboard shortcuts');
+  console.error('  - UI Automation (1 tool): Click UI elements');
   console.error('  - Permissions (4 tools): Manage macOS system permissions');
   console.error('');
-  console.error('Total: 24 tools available');
+  console.error('Total: 12 tools available');
   console.error('');
   console.error('Note: This server requires macOS system permissions:');
-  console.error('  - Accessibility (for UI automation and hotkeys)');
-  console.error('  - Screen Recording (for screenshots)');
-  console.error('  - Input Monitoring (for keyboard/mouse control)');
+  console.error('  - Accessibility (for UI automation)');
+  console.error('  - Screen Recording (for screenshots via CDP)');
   console.error('');
   console.error('Use the permission tools to check and request permissions.');
 }

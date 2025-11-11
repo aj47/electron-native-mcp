@@ -6,7 +6,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { domTools } from './tools/dom/index.js';
 import { uiTools } from './tools/ui/index.js';
-import { hotkeyTools } from './tools/hotkey/index.js';
 import { permissionTools } from './tools/permissions/index.js';
 
 /**
@@ -32,18 +31,6 @@ export function createServer(): McpServer {
 
   // Register all UI automation tools
   for (const tool of uiTools) {
-    server.registerTool(
-      tool.name,
-      {
-        description: tool.description,
-        inputSchema: tool.inputSchema.shape,
-      },
-      tool.handler
-    );
-  }
-
-  // Register all hotkey tools
-  for (const tool of hotkeyTools) {
     server.registerTool(
       tool.name,
       {
