@@ -232,7 +232,7 @@ export class CDPClient {
    */
   async screenshot(
     targetId: string,
-    options?: { format?: 'png' | 'jpeg'; quality?: number }
+    options?: { format?: 'png' | 'jpeg'; quality?: number; optimizeForSpeed?: boolean }
   ): Promise<string> {
     const connection = this.getConnection(targetId);
 
@@ -240,6 +240,7 @@ export class CDPClient {
       const { data } = await connection.client.Page.captureScreenshot({
         format: options?.format || 'png',
         quality: options?.quality,
+        optimizeForSpeed: options?.optimizeForSpeed ?? true,
       });
       return data;
     } catch (error: any) {
