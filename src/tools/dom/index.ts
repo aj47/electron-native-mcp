@@ -11,9 +11,12 @@ import type { ToolResult } from '../../types/index.js';
 let cdpClient: CDPClient | null = null;
 let connectedTargetId: string | null = null;
 
+// Get CDP port from environment variable or default to 9222
+const CDP_PORT = parseInt(process.env.CDP_PORT || '9222', 10);
+
 async function ensureConnected(): Promise<{ client: CDPClient; targetId: string }> {
   if (!cdpClient) {
-    cdpClient = new CDPClient();
+    cdpClient = new CDPClient('localhost', CDP_PORT);
   }
 
   // If already connected, return existing connection
@@ -37,69 +40,21 @@ async function ensureConnected(): Promise<{ client: CDPClient; targetId: string 
   return { client: cdpClient, targetId: connectedTargetId };
 }
 
-const TOOL_DESCRIPTION = `electron_execute is a tool to control Electron applications via Chrome DevTools Protocol.
+const TOOL_DESCRIPTION = `Execute JavaScript in an Electron app's renderer process via CDP.
 
-If you get an error "No Electron targets found", tell the user to start their Electron app with the --inspect=9222 flag.
+Returns the last expression's value. Use \`state\` object to persist data between calls.
 
-execute tool lets you run JavaScript code snippets to control the Electron window. These code snippets are preferred to be in a single line to make them more readable in agent interface, separating statements with semicolons.
+Key patterns:
+- Click: document.querySelector('#btn').click(); 'done'
+- Fill input: el.value='text'; el.dispatchEvent(new Event('input',{bubbles:true}))
+- Read DOM: Array.from(document.querySelectorAll('a')).map(a=>({text:a.textContent,href:a.href}))
 
-You can extract data from your script by returning values. The last expression's value will be returned.
+Best practices:
+- Use multiple calls: find element → interact → verify result
+- Always return a value to confirm what happened
+- Check page state after actions (don't assume)
 
-To keep variables between calls, use the \`state\` global object. Regular variables are reset between runs. Example: \`state.counter = (state.counter || 0) + 1\`
-
-You MUST use multiple execute tool calls for complex logic. This ensures:
-- You have clear understanding of intermediate state between interactions
-- You can split finding an element from interacting with it, making it simpler to understand issues
-
-The code runs in the Electron renderer process context with access to:
-- \`document\`: the DOM document
-- \`window\`: the window object
-- All standard browser APIs
-
-## Examples
-
-### Get page info
-\`\`\`js
-JSON.stringify({ title: document.title, url: window.location.href, readyState: document.readyState })
-\`\`\`
-
-### Click a button
-\`\`\`js
-document.querySelector('#myButton').click(); 'clicked'
-\`\`\`
-
-### Fill an input
-\`\`\`js
-const input = document.querySelector('#email'); input.value = 'test@example.com'; input.dispatchEvent(new Event('input', { bubbles: true })); 'filled'
-\`\`\`
-
-### Get all links on page
-\`\`\`js
-Array.from(document.querySelectorAll('a')).map(a => ({ text: a.textContent?.trim(), href: a.href })).slice(0, 20)
-\`\`\`
-
-### Check element visibility
-\`\`\`js
-const el = document.querySelector('#loading'); el ? { visible: el.offsetParent !== null, text: el.textContent } : 'element not found'
-\`\`\`
-
-### Wait for element (use in subsequent calls)
-\`\`\`js
-document.querySelector('.results') ? 'ready' : 'not yet'
-\`\`\`
-
-### Store data between calls
-\`\`\`js
-state.items = state.items || []; state.items.push(document.querySelector('h1')?.textContent); state.items.length + ' items collected'
-\`\`\`
-
-## Rules
-
-- Always check the current page state after an action (click, submit, etc.) - you cannot assume what happened
-- Use multiple calls: first find elements, then interact, then verify results
-- Return meaningful values to understand what happened
-- Use state object to persist data between calls
-- Keep code snippets short and focused on one task`;
+Error "No Electron targets found" = app needs --inspect flag or CDP_PORT env var mismatch.`;
 
 /**
  * Execute JavaScript in Electron
@@ -178,8 +133,7 @@ export const executeJavaScript = {
 export const resetConnection = {
   name: 'electron_reset',
   description:
-    'Reset the CDP connection to the Electron app. Use this when the MCP stops responding or you get connectivity errors. ' +
-    'This will disconnect from the current target and clear any state. You may lose custom properties that were added to the page scope (window.__electronMcpState).',
+    'Reset CDP connection. Use when execute times out or returns connectivity errors. Clears the state object.',
   inputSchema: z.object({}),
   handler: async (): Promise<ToolResult> => {
     try {

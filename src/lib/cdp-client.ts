@@ -8,14 +8,31 @@ import CDP from 'chrome-remote-interface';
 import type { CDPTarget, CDPConnection, DOMNode } from '../types/index.js';
 import { CDPError } from '../types/index.js';
 
+// Default timeout for CDP operations (30 seconds)
+const DEFAULT_TIMEOUT_MS = 30000;
+
+/**
+ * Wrap a promise with a timeout
+ */
+function withTimeout<T>(promise: Promise<T>, ms: number, operation: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`${operation} timed out after ${ms}ms`)), ms)
+    ),
+  ]);
+}
+
 export class CDPClient {
   private connections: Map<string, CDPConnection> = new Map();
   private host: string;
   private port: number;
+  private timeout: number;
 
-  constructor(host = 'localhost', port = 9222) {
+  constructor(host = 'localhost', port = 9222, timeout = DEFAULT_TIMEOUT_MS) {
     this.host = host;
     this.port = port;
+    this.timeout = timeout;
   }
 
   /**
@@ -23,7 +40,8 @@ export class CDPClient {
    */
   async listTargets(): Promise<CDPTarget[]> {
     try {
-      const targets = await CDP.List({ host: this.host, port: this.port });
+      const listPromise = CDP.List({ host: this.host, port: this.port });
+      const targets = await withTimeout<any[]>(listPromise, this.timeout, 'List CDP targets');
       return targets.map((target: any) => ({
         id: target.id,
         type: target.type,
@@ -53,20 +71,22 @@ export class CDPClient {
         }
       }
 
-      // Create new connection
-      const client = await CDP({
+      // Create new connection with timeout
+      const connectPromise = CDP({
         host: this.host,
         port: this.port,
         target: targetId,
       });
+      const client = await withTimeout<any>(connectPromise, this.timeout, 'Connect to CDP target');
 
-      // Enable required domains
-      await Promise.all([
+      // Enable required domains with timeout
+      const enablePromise = Promise.all([
         client.DOM.enable(),
         client.Runtime.enable(),
         client.Page.enable(),
         client.Network.enable(),
       ]);
+      await withTimeout(enablePromise, this.timeout, 'Enable CDP domains');
 
       this.connections.set(targetId, {
         targetId,
@@ -208,11 +228,17 @@ export class CDPClient {
     const connection = this.getConnection(targetId);
 
     try {
-      const { result, exceptionDetails } = await connection.client.Runtime.evaluate({
+      const evaluatePromise = connection.client.Runtime.evaluate({
         expression,
         returnByValue: true,
         awaitPromise: true,
       });
+
+      const { result, exceptionDetails } = await withTimeout<{ result: any; exceptionDetails?: any }>(
+        evaluatePromise,
+        this.timeout,
+        'JavaScript evaluation'
+      );
 
       if (exceptionDetails) {
         throw new Error(exceptionDetails.text || 'JavaScript execution failed');
